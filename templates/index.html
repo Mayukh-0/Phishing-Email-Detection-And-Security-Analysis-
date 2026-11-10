@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Email Detection System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main class="container">
+  <header>
+    <div class="shield">🛡️</div>
+    <h1>Phishing Email Detection</h1>
+    <p class="subtitle">Rule-based email security analysis dashboard</p>
+  </header>
+
+  <form method="POST" action="/">
+    <label for="sender">Sender email address</label>
+    <input id="sender" type="text" name="sender" placeholder="example@email.com"
+           required value="{{ form_data.sender }}">
+
+    <label for="subject">Email subject</label>
+    <input id="subject" type="text" name="subject" placeholder="Enter email subject"
+           required value="{{ form_data.subject }}">
+
+    <label for="body">Email body</label>
+    <textarea id="body" name="body" rows="8" placeholder="Paste email content here..."
+              required>{{ form_data.body }}</textarea>
+
+    <button type="submit">Analyze Email</button>
+  </form>
+
+  {% if result %}
+  <section class="result" aria-live="polite">
+    {% if result.error %}
+      <h2>Input error</h2>
+      <p>{{ result.error }}</p>
+    {% else %}
+      <h2>Security analysis report</h2>
+      <div class="badge {{ result.risk_level|lower|replace(' ', '-') }}">{{ result.risk_level }}</div>
+      <h3>{{ result.result }}</h3>
+      <p><strong>Risk score:</strong> {{ result.score }}</p>
+      <h3>Detected indicators</h3>
+      <ul>
+        {% for finding in result.findings %}
+          <li>{{ finding }}</li>
+        {% else %}
+          <li>No predefined indicators detected.</li>
+        {% endfor %}
+      </ul>
+      {% if result.urls %}
+      <h3>Links found in the email</h3>
+      <ul>{% for url in result.urls %}<li class="url">{{ url }}</li>{% endfor %}</ul>
+      {% endif %}
+      <h3>Recommendation</h3>
+      {% if result.risk_level == "HIGH RISK" %}
+        <p>Do not click links or share credentials. Verify the message through the organisation's official website or a known contact channel.</p>
+      {% elif result.risk_level == "MEDIUM RISK" %}
+        <p>Verify the sender and destination domains independently before taking action.</p>
+      {% else %}
+        <p>No strong indicators were detected. This does not prove the email is safe; inspect unexpected messages carefully.</p>
+      {% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <footer>Educational project only. A low score does not guarantee that an email is legitimate.</footer>
+</main>
+</body>
+</html>
